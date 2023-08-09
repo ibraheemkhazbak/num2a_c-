@@ -14,8 +14,8 @@ namespace num2a_C_
         List<NumberName> GetDigitArray(int digit);
         string AddDigitTanween(string pString);
         string GetDigitString(int digit, char masterDigit, int power, bool isCombined, bool isMaster, bool isFinal, bool useThirdIdx, bool isDigitsToRight, string itemName, string dualItemname, string pluralItemName, bool itemGender);
-        bool hasDigitToRight(string numbers,int idx);
-        double GetFractionalPart(double num, int decimalPlace, int leadingZeros);
+        bool HasDigitToRight(string numbers,int idx);
+        double GetFractionalPart(double num);
         string ProcessNumW(double num, string itemName, string itemNameTanween, string dualItemName, string pluralItemName, bool itemGender, bool isFractionalOnly);
     }
 }

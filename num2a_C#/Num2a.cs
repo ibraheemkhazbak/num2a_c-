@@ -1,6 +1,7 @@
 ﻿using num2a_C_.constants;
 using num2a_C_.Models;
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Text;
 
@@ -26,15 +27,14 @@ namespace num2a_C_
         {
             List<NumberName> twoNamesCorrection = new List<NumberName> {
                 new NumberName(true,3,"مئتا"),
-                new NumberName(true, 4, "ألفا"), 
+                new NumberName(true, 4, "ألفا"),
                 new NumberName(true, 7, "مليونا"),
                 new NumberName(true, 10, "مليارا"),
-                new NumberName(true, 13, "تريليونا"), 
+                new NumberName(true, 13, "تريليونا"),
                 new NumberName(true, 16, "كوادريليونا")
             };
 
-            int idx = 0;
-            for (idx = 0; idx < CONST_NUMBERS.MAX_TWO_CORRECTION_ARRAY; idx++)
+            for (int idx = 0; idx < CONST_NUMBERS.MAX_TWO_CORRECTION_ARRAY; idx++)
             {
                 if (twoNamesCorrection[idx].Place == power)
                 {
@@ -153,16 +153,16 @@ namespace num2a_C_
                         else
                             return (itemGender == CONST_ITEM_GENDER.IG_MALE) ? "اثنان" : "اثنتان";
                     default:
-                        return GetNumberName(numberNames[0], itemGender, isMaster, isCombined));
+                        return GetNumberName(numberNames[0], itemGender, isMaster, isCombined);
                 }
             }
 
         }
-        public bool hasDigitToRight(string numbers, int idx)
+        public bool HasDigitToRight(string numbers, int idx)
         {
             if (idx <= numbers.Length - 1 && idx > 0)
             {
-                for (int i = idx; i > 0;i--)
+                for (int i = idx; i > 0; i--)
                 {
                     if (numbers[i] != '0')
                     {
@@ -173,16 +173,148 @@ namespace num2a_C_
             return false;
         }
 
-        public double GetFractionalPart(double num, int decimalPlace, int leadingZeros)
+        public double GetFractionalPart(double num)
         {
-            
+            return num - Math.Truncate(num);
         }
 
 
 
         public string ProcessNumW(double num, string itemName, string itemNameTanween, string dualItemName, string pluralItemName, bool itemGender, bool isFractionalOnly)
         {
-            throw new NotImplementedException();
+            StringBuilder resultBuilder = new StringBuilder();
+            string builderTanween;
+            string masterOnHold = null;
+            string numberString;
+            string digitString;
+            char masterDigit;
+
+            int digit;
+            bool isCombined = false, isMaster, isFinal=false, useThirdIndex = false,
+                hasDigitToRight, isNegative=false, isTenth=false;
+            int numberLength, stringLength, onHoldLength, tempLength;
+
+
+            numberString = Math.Truncate(num).ToString();
+            numberString = ReverseString(numberString);
+
+            numberLength = numberString.Length;
+            for (int i = numberLength - 1; i >= 0; i--)
+            {
+                digit = numberString[i] - '0';
+                if (digit == 0)
+                    continue;
+
+                isCombined = ((i + 1) % 3 == 1) && (i < numberLength - 1) && (numberString[i + 1] != '0');
+                if (isCombined)
+                    masterDigit = numberString[i + 1];
+                else
+                    masterDigit = '\0';
+
+                isMaster = i>0 ? ((i + 1) % 3 == 2) & (numberString[i - 1] != '0'):false;
+                isFinal = numberLength>1?(((numberLength > 1) & (numberString[1] == '0') & (i == 0))) | (numberLength == 1):false;
+                useThirdIndex = i>1 ? (numberLength >= 6) & ((i + 1) % 3 == 0) & (i != 0) & ((numberString[i - 1] != '0') | (numberString[i - 2] != '0')): false;
+                hasDigitToRight = HasDigitToRight(numberString, numberLength);
+                isTenth = (i == 1) & (numberString[i] != '0') & (numberString[0] == '0');
+
+                digitString = GetDigitString(digit, masterDigit, i, isCombined, isMaster, isFinal, useThirdIndex, hasDigitToRight, itemName, dualItemName, pluralItemName, itemGender);
+
+                if (!(digitString is null))
+                {
+                    if (isMaster)
+                    {
+                        masterOnHold = digitString;
+                    }
+                    else
+                    {
+                        if (resultBuilder.Length != 0)
+                        {
+                            if (isCombined)
+                            {
+                                resultBuilder.Append(CONST_NUMBERS.STR_AND);
+                                resultBuilder.Append(digitString);
+
+                                if (numberString[i + 1] == '1')
+                                    resultBuilder.Append(CONST_NUMBERS.STR_SPACE);
+                                else
+                                    resultBuilder.Append(CONST_NUMBERS.STR_AND);
+
+                                resultBuilder.Append(masterOnHold);
+
+                                if (i > 2 && hasDigitToRight)
+                                {
+                                    builderTanween = AddDigitTanween(resultBuilder.ToString());
+                                    resultBuilder.Clear();
+                                    resultBuilder.Append(builderTanween);
+                                }
+                            }
+                            else
+                            {
+                                resultBuilder.Append(CONST_NUMBERS.STR_AND);
+                                resultBuilder.Append(digitString);
+
+                            }
+                        }
+                        else {
+                            if (isCombined)
+                            {
+                                resultBuilder.Append(digitString);
+                                if (numberString[i + 1] == 1)
+                                    resultBuilder.Append(CONST_NUMBERS.STR_SPACE);
+                                else
+                                    resultBuilder.Append(CONST_NUMBERS.STR_AND);
+                                resultBuilder.Append(masterOnHold);
+
+                                if(i > 2 && hasDigitToRight)
+                                {
+                                    builderTanween = AddDigitTanween(resultBuilder.ToString());
+                                    resultBuilder.Clear();
+                                    resultBuilder.Append(builderTanween);
+                                }
+                            }
+                            else
+                            {
+                                resultBuilder.Append(digitString);
+                            }
+                        }
+                    }
+
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            if (resultBuilder.Length != 0)
+            {
+                if (!isFinal)
+                {
+                    resultBuilder.Append(CONST_NUMBERS.STR_SPACE);
+
+                    if ((numberLength > 1) && (numberString[0] == '0') & (numberString[1] == '1'))
+                        resultBuilder.Append(pluralItemName);
+                    else
+                    {
+                        if (isCombined || isTenth)
+                            resultBuilder.Append(itemNameTanween);
+                        else
+                            resultBuilder.Append(itemName);
+                    }
+                }
+            }
+
+            return resultBuilder.ToString();
+
         }
-    }
+        private string ReverseString(string s)
+        {
+            char[] charArray = s.ToCharArray();
+            Array.Reverse(charArray);
+
+            return new string(charArray);
+        }
+
+        
+}
 }
