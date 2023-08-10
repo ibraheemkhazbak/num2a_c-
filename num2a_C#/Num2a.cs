@@ -82,11 +82,9 @@ namespace num2a_C_
             List<NumberName> numberNames;
             string numberNameString;
             StringBuilder finalStringBuilder = new StringBuilder();
-            int length = 0;
-
-
 
             numberNames = GetDigitArray(digit);
+            numberNameString = GetNumberName(numberNames[power], itemGender, isMaster, isCombined);
 
             if ((power > (CONST_NUMBERS.MAX_DIG_ARRAY_SIZE - 1)) || power < 0)
                 return null;
@@ -96,24 +94,23 @@ namespace num2a_C_
             {
                 if (isFinal)
                 {
-                    numberNameString = GetNumberName(numberNames[power], itemGender, isMaster, isCombined);
                     switch (digit)
                     {
                         case 1:
                             finalStringBuilder.Append(itemName);
                             finalStringBuilder.Append(CONST_NUMBERS.STR_SPACE);
-                            finalStringBuilder.Append(numberNames);
+                            finalStringBuilder.Append(numberNameString);
 
                             return finalStringBuilder.ToString();
                         case 2:
 
                             finalStringBuilder.Append(dualItemname);
                             finalStringBuilder.Append(CONST_NUMBERS.STR_SPACE);
-                            finalStringBuilder.Append(numberNames);
+                            finalStringBuilder.Append(numberNameString);
 
                             return finalStringBuilder.ToString();
                         default:
-                            finalStringBuilder.Append(numberNames);
+                            finalStringBuilder.Append(numberNameString);
                             finalStringBuilder.Append(CONST_NUMBERS.STR_SPACE);
                             finalStringBuilder.Append(pluralItemName);
 
@@ -212,7 +209,7 @@ namespace num2a_C_
                     masterDigit = '\0';
 
                 isMaster = i>0 ? ((i + 1) % 3 == 2) & (numberString[i - 1] != '0'):false;
-                isFinal = numberLength>1?(((numberLength > 1) & (numberString[1] == '0') & (i == 0))) | (numberLength == 1):false;
+                isFinal = numberLength>1?(((numberLength > 1) & (numberString[1] == '0') & (i == 0))) | (numberLength == 1):true;
                 useThirdIndex = i>1 ? (numberLength >= 6) & ((i + 1) % 3 == 0) & (i != 0) & ((numberString[i - 1] != '0') | (numberString[i - 2] != '0')): false;
                 hasDigitToRight = HasDigitToRight(numberString, numberLength);
                 isTenth = (i == 1) & (numberString[i] != '0') & (numberString[0] == '0');
@@ -292,7 +289,7 @@ namespace num2a_C_
                 {
                     resultBuilder.Append(CONST_NUMBERS.STR_SPACE);
 
-                    if ((numberLength > 1) && (numberString[0] == '0') & (numberString[1] == '1'))
+                    if ((numberLength > 1) && (numberString[0] == '0') && (numberString[1] == '1'))
                         resultBuilder.Append(pluralItemName);
                     else
                     {
@@ -301,6 +298,7 @@ namespace num2a_C_
                         else
                             resultBuilder.Append(itemName);
                     }
+                    resultBuilder.Append(CONST_NUMBERS.STR_SPACE);
                 }
             }
 
